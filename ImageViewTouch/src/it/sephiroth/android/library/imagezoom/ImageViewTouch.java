@@ -157,11 +157,11 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		if ( getScale() == 1f ) return false;
 
 		mUserScaled = true;
-		scrollBy( -distanceX, -distanceY );
+		RectF scrolledby = scrollBy( -distanceX, -distanceY );
 		invalidate();
 		if (null != this.mScrollListener)
 		{
-			this.mScrollListener.onScroll(e1, e2, currentscale);
+			this.mScrollListener.onScroll(e1, e2, currentscale, -scrolledby.left, -scrolledby.top);
 		}
 
 		return true;
@@ -186,35 +186,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		return false;
 	}
 
-	/**
-	 * Determines whether this ImageViewTouch can be scrolled.
-	 * 
-	 * @param direction
-	 *            - positive direction value means scroll from right to left,
-	 *            negative value means scroll from left to right
-	 * 
-	 * @return true if there is some more place to scroll, false - otherwise.
-	 */
-	public boolean canScroll( int direction ) {
-		RectF bitmapRect = getBitmapRect();
-		updateRect( bitmapRect, mScrollRect );
-		Rect imageViewRect = new Rect();
-		getGlobalVisibleRect( imageViewRect );
-		
-		if( null == bitmapRect ) {
-			return false;
-		}
-
-		if ( bitmapRect.right >= imageViewRect.right ) {
-			if ( direction < 0 ) {
-				return Math.abs( bitmapRect.right - imageViewRect.right ) > SCROLL_DELTA_THRESHOLD;
-			}
-		}
-
-		double bitmapScrollRectDelta = Math.abs( bitmapRect.left - mScrollRect.left );
-		return bitmapScrollRectDelta > SCROLL_DELTA_THRESHOLD;
-	}
-
+	
 	private float currentscale = 1f;
 	public class GestureListener extends GestureDetector.SimpleOnGestureListener {
 
@@ -312,7 +284,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	}
 	public interface OnImageViewTouchScrollListener {
 
-		void onScroll(MotionEvent e1, MotionEvent e2, float scale);
+		void onScroll(MotionEvent e1, MotionEvent e2, float scale, float distanceX, float distanceY);
 	}
 	public interface OnImageViewTouchScaleListener {
 

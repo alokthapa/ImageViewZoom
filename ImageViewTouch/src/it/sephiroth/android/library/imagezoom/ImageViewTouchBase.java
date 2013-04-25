@@ -860,16 +860,17 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	 * @param x
 	 * @param y
 	 */
-	public void scrollBy( float x, float y ) {
-		panBy( x, y );
+	public RectF scrollBy( float x, float y ) {
+		return panBy( x, y );
 	}
 
-	protected void panBy( double dx, double dy ) {
+	protected RectF panBy( double dx, double dy ) {
 		RectF rect = getBitmapRect();
 		mScrollRect.set( (float) dx, (float) dy, 0, 0 );
 		updateRect( rect, mScrollRect );
 		postTranslate( mScrollRect.left, mScrollRect.top );
 		center( true, true );
+		return mScrollRect;
 	}
 
 	protected void updateRect( RectF bitmapRect, RectF scrollRect ) {
