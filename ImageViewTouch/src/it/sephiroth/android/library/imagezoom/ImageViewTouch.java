@@ -1,7 +1,9 @@
 package it.sephiroth.android.library.imagezoom;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -29,10 +31,14 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	protected boolean mScrollEnabled = true;
 	private OnImageViewTouchDoubleTapListener mDoubleTapListener;
 	private OnImageViewTouchSingleTapListener mSingleTapListener;
+	private OnImageViewTouchScrollListener mScrollListener;
+	private OnImageViewTouchScaleListener mImageScaleListener;
 
 	public ImageViewTouch ( Context context, AttributeSet attrs ) {
 		super( context, attrs );
 	}
+	
+
 
 	@Override
 	protected void init() {
@@ -55,6 +61,15 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		mSingleTapListener = listener;
 	}
 
+	public void setScrollListener( OnImageViewTouchScrollListener listener ) {
+		this.mScrollListener = listener;
+	}
+
+	public void setScaleListener( OnImageViewTouchScaleListener listener ) {
+		this.mImageScaleListener = listener;
+	}
+	
+	
 	public void setDoubleTapEnabled( boolean value ) {
 		mDoubleTapEnabled = value;
 	}
@@ -78,7 +93,9 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	protected OnScaleGestureListener getScaleListener() {
 		return new ScaleListener();
 	}
-
+	
+	
+	
 	@Override
 	protected void _setImageDrawable( final Drawable drawable, final Matrix initial_matrix, float min_zoom, float max_zoom ) {
 		super._setImageDrawable( drawable, initial_matrix, min_zoom, max_zoom );
@@ -142,6 +159,11 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		mUserScaled = true;
 		scrollBy( -distanceX, -distanceY );
 		invalidate();
+		if (null != this.mScrollListener)
+		{
+			this.mScrollListener.onScroll(e1, e2, currentscale);
+		}
+
 		return true;
 	}
 
@@ -193,14 +215,16 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		return bitmapScrollRectDelta > SCROLL_DELTA_THRESHOLD;
 	}
 
+	private float currentscale = 1f;
 	public class GestureListener extends GestureDetector.SimpleOnGestureListener {
 
 		@Override
 		public boolean onSingleTapConfirmed( MotionEvent e ) {
 
 			if ( null != mSingleTapListener ) {
-				mSingleTapListener.onSingleTapConfirmed();
+				mSingleTapListener.onSingleTapConfirmed(e, currentscale);
 			}
+			
 
 			return super.onSingleTapConfirmed( e );
 		}
@@ -214,12 +238,12 @@ public class ImageViewTouch extends ImageViewTouchBase {
 				float targetScale = scale;
 				targetScale = onDoubleTapPost( scale, getMaxScale() );
 				targetScale = Math.min( getMaxScale(), Math.max( targetScale, getMinScale() ) );
+				currentscale = targetScale;
 				zoomTo( targetScale, e.getX(), e.getY(), DEFAULT_ANIMATION_DURATION );
 				invalidate();
 			}
-
 			if ( null != mDoubleTapListener ) {
-				mDoubleTapListener.onDoubleTap();
+				mDoubleTapListener.onDoubleTap(e, currentscale);
 			}
 
 			return super.onDoubleTap( e );
@@ -261,9 +285,11 @@ public class ImageViewTouch extends ImageViewTouchBase {
 				if( mScaled && span != 0 ) {
 					mUserScaled = true;
 					targetScale = Math.min( getMaxScale(), Math.max( targetScale, getMinScale() - 0.1f ) );
+					currentscale = targetScale;
 					zoomTo( targetScale, detector.getFocusX(), detector.getFocusY() );
 					mDoubleTapDirection = 1;
 					invalidate();
+					
 					return true;
 				}
 				
@@ -277,11 +303,19 @@ public class ImageViewTouch extends ImageViewTouchBase {
 
 	public interface OnImageViewTouchDoubleTapListener {
 
-		void onDoubleTap();
+		void onDoubleTap(MotionEvent e, float scale);
 	}
 
 	public interface OnImageViewTouchSingleTapListener {
 
-		void onSingleTapConfirmed();
+		void onSingleTapConfirmed(MotionEvent e, float scale);
+	}
+	public interface OnImageViewTouchScrollListener {
+
+		void onScroll(MotionEvent e1, MotionEvent e2, float scale);
+	}
+	public interface OnImageViewTouchScaleListener {
+
+		void onScale(MotionEvent e, float scale);
 	}
 }

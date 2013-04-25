@@ -1,6 +1,8 @@
 package it.sephiroth.android.library.imagezoom.graphics;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 
 /**
@@ -16,25 +19,35 @@ import android.graphics.drawable.Drawable;
  * @author alessandro
  *
  */
+
 public class FastBitmapDrawable extends Drawable implements IBitmapDrawable {
 
 	protected Bitmap mBitmap;
 	protected Paint mPaint;
+	protected ArrayList<PointF> points;
+	protected Bitmap tag;
 
-	public FastBitmapDrawable( Bitmap b ) {
+	public FastBitmapDrawable( Bitmap b, Bitmap tag ,  ArrayList<PointF> points ) {
 		mBitmap = b;
 		mPaint = new Paint();
 		mPaint.setDither( true );
 		mPaint.setFilterBitmap( true );
+		this.points = points;
+		this.tag = tag;
 	}
 	
 	public FastBitmapDrawable( Resources res, InputStream is ){
-		this(BitmapFactory.decodeStream(is));
+		this(BitmapFactory.decodeStream(is),null,null );
 	}
 
 	@Override
 	public void draw( Canvas canvas ) {
 		canvas.drawBitmap( mBitmap, 0.0f, 0.0f, mPaint );
+		for(PointF p : points)
+		{
+			canvas.drawBitmap(tag, p.x ,p.y,mPaint);
+		}
+		
 	}
 
 	@Override

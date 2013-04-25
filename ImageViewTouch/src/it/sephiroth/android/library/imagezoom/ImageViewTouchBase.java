@@ -1,5 +1,9 @@
 package it.sephiroth.android.library.imagezoom;
 
+
+
+import java.util.ArrayList;
+
 import it.sephiroth.android.library.imagezoom.easing.Cubic;
 import it.sephiroth.android.library.imagezoom.easing.Easing;
 import it.sephiroth.android.library.imagezoom.graphics.FastBitmapDrawable;
@@ -7,6 +11,8 @@ import it.sephiroth.android.library.imagezoom.utils.IDisposable;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
@@ -63,7 +69,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 	
 	public static final String LOG_TAG = "ImageViewTouchBase";
-	protected static final boolean LOG_ENABLED = false;
+	protected static final boolean LOG_ENABLED = true;
 
 	public static final float ZOOM_INVALID = -1f;
 
@@ -127,6 +133,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	@Override
 	public void setScaleType( ScaleType scaleType ) {
 		if ( scaleType == ScaleType.MATRIX ) {
+			
 			super.setScaleType( scaleType );
 		} else {
 			Log.w( LOG_TAG, "Unsupported scaletype. Only MATRIX can be used" );
@@ -363,9 +370,22 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	 * @param min_zoom
 	 * @param max_zoom
 	 */
+	
+	
+	ArrayList<PointF> points;
+	public void setTags(ArrayList<PointF> points)
+	{
+		this.points = points;
+	}
+	
 	public void setImageBitmap( final Bitmap bitmap, Matrix matrix, float min_zoom, float max_zoom ) {
 		if ( bitmap != null )
-			setImageDrawable( new FastBitmapDrawable( bitmap ), matrix, min_zoom, max_zoom );
+		{
+			
+	    	Bitmap tag = BitmapFactory.decodeResource(getResources(), R.drawable.mark);
+
+	    	setImageDrawable( new FastBitmapDrawable( bitmap, tag, points), matrix, min_zoom, max_zoom );			
+		}
 		else
 			setImageDrawable( null, matrix, min_zoom, max_zoom );
 	}
@@ -928,5 +948,11 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	@Override
 	public void dispose() {
 		clear();
+	}
+
+	protected void OnDraw(Canvas canvas) {
+		// TODO Auto-generated method stub
+		super.onDraw(canvas);
+		
 	}
 }
