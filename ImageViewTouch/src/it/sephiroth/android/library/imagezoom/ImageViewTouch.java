@@ -209,7 +209,14 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		public boolean onSingleTapConfirmed( MotionEvent e ) {
 
 			if ( null != mSingleTapListener ) {
-				mSingleTapListener.onSingleTapConfirmed(e, currentscale);
+				Matrix now = getImageMatrix();
+				Matrix inv =new Matrix();
+				now.invert(inv);
+				float [] pts= new float[] {e.getX(),e.getY()};
+				
+				inv.mapPoints(pts);
+
+				mSingleTapListener.onSingleTapConfirmed(e, currentscale, pts[0],pts[1]);
 			}
 			
 
@@ -298,7 +305,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 
 	public interface OnImageViewTouchSingleTapListener {
 
-		void onSingleTapConfirmed(MotionEvent e, float scale);
+		void onSingleTapConfirmed(MotionEvent e, float scale, float realX, float realY);
 	}
 	public interface OnImageViewTouchScrollListener {
 
