@@ -88,7 +88,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	private boolean mMaxZoomDefined;
 	private boolean mMinZoomDefined;
 
-	protected final Matrix mDisplayMatrix = new Matrix();
 	protected final float[] mMatrixValues = new float[9];
 
 	private int mThisWidth = -1;
@@ -103,7 +102,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 	protected RectF mBitmapRect = new RectF();
 	protected RectF mCenterRect = new RectF();
-	protected RectF mScrollRect = new RectF();
 
 	private OnDrawableChangeListener mDrawableChangeListener;
 	private OnLayoutChangeListener mOnLayoutChangeListener;
@@ -589,24 +587,21 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	}
 
 	public Matrix getImageViewMatrix( Matrix supportMatrix ) {
-		mDisplayMatrix.set( mBaseMatrix );
-		mDisplayMatrix.postConcat( supportMatrix );
-		return mDisplayMatrix;
+		Matrix display = new Matrix();
+		display.set( mBaseMatrix );
+		display.postConcat( supportMatrix );
+		return display;
 	}
 
 	@Override
 	public void setImageMatrix( Matrix matrix ) {
 
 		Matrix current = getImageMatrix();
-		boolean needUpdate = false;
 		
 		if ( matrix == null && !current.isIdentity() || matrix != null && !current.equals( matrix ) ) {
-			needUpdate = true;
+			super.setImageMatrix( matrix );
+			onImageMatrixChanged();
 		}
-		
-		super.setImageMatrix( matrix );
-		
-		if ( needUpdate ) onImageMatrixChanged();
 	}
 
 	/**
@@ -795,6 +790,8 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		}
 		mCenterRect.set( deltaX, deltaY, 0, 0 );
 		return mCenterRect;
+		
+		
 	}
 
 	protected void postTranslate( float deltaX, float deltaY ) {
@@ -807,12 +804,30 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		}
 	}
 
-	protected void postScale( float scale, float centerX, float centerY ) {
+	protected Matrix postScale( float scale, float centerX, float centerY ) {
+		
+		
+		Log.i( LOG_TAG, "BEFORE --> postScale OrigMatrix: " + getValue(getImageMatrix(), Matrix.MSCALE_X) );
+
 		if ( LOG_ENABLED ) {
 			Log.i( LOG_TAG, "postScale: " + scale + ", center: " + centerX + "x" + centerY );
 		}
 		mSuppMatrix.postScale( scale, scale, centerX, centerY );
-		setImageMatrix( getImageViewMatrix() );
+		
+		Log.i( LOG_TAG, "postScale mSuppMatrix: " + getValue(mSuppMatrix, Matrix.MSCALE_X));
+
+		Log.i( LOG_TAG, "postScale mBaseMatrix: " + getValue(mBaseMatrix, Matrix.MSCALE_X));
+		
+		Matrix display = new Matrix();
+		display.set(mBaseMatrix);
+		display.postConcat(mSuppMatrix);
+		
+		super.setImageMatrix( display );
+		onImageMatrixChanged();
+		Log.i( LOG_TAG, "AFTER --> postScale OrigMatrix: " + getValue(getImageMatrix(), Matrix.MSCALE_X) );
+
+			
+		return display;
 	}
 
 	protected PointF getCenter() {
@@ -865,17 +880,11 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	}
 
 	protected RectF panBy( double dx, double dy ) {
-		RectF rect = getBitmapRect();
-		mScrollRect.set( (float) dx, (float) dy, 0, 0 );
-		updateRect( rect, mScrollRect );
-		postTranslate( mScrollRect.left, mScrollRect.top );
-		center( true, true );
-		return mScrollRect;
-	}
+		RectF bitmapRect = getBitmapRect();
+		RectF scrollRect = new RectF();
 
-	protected void updateRect( RectF bitmapRect, RectF scrollRect ) {
-		if ( bitmapRect == null ) return;
-
+		scrollRect.set( (float) dx, (float) dy, 0, 0 );
+		
 		if ( bitmapRect.top >= 0 && bitmapRect.bottom <= mThisHeight ) scrollRect.top = 0;
 		if ( bitmapRect.left >= 0 && bitmapRect.right <= mThisWidth ) scrollRect.left = 0;
 		if ( bitmapRect.top + scrollRect.top >= 0 && bitmapRect.bottom > mThisHeight ) scrollRect.top = (int) ( 0 - bitmapRect.top );
@@ -883,7 +892,13 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 			scrollRect.top = (int) ( ( mThisHeight - 0 ) - bitmapRect.bottom );
 		if ( bitmapRect.left + scrollRect.left >= 0 ) scrollRect.left = (int) ( 0 - bitmapRect.left );
 		if ( bitmapRect.right + scrollRect.left <= ( mThisWidth - 0 ) ) scrollRect.left = (int) ( ( mThisWidth - 0 ) - bitmapRect.right );
+
+		
+		postTranslate( scrollRect.left, scrollRect.top );
+		center( true, true );
+		return scrollRect;
 	}
+
 
 	protected void scrollBy( float distanceX, float distanceY, final double durationMs ) {
 		final double dx = distanceX;
@@ -914,6 +929,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	}
 
 	protected void zoomTo( float scale, float centerX, float centerY, final float durationMs ) {
+		
 		if ( scale > getMaxScale() ) scale = getMaxScale();
 
 		final long startTime = System.currentTimeMillis();
@@ -951,9 +967,5 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		clear();
 	}
 
-	protected void OnDraw(Canvas canvas) {
-		// TODO Auto-generated method stub
-		super.onDraw(canvas);
-		
-	}
+
 }
