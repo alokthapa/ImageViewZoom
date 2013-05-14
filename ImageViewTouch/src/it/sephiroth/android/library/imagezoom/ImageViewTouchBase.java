@@ -370,11 +370,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	 */
 	
 	
-	ArrayList<PointF> points;
-	public void setTags(ArrayList<PointF> points)
-	{
-		this.points = points;
-	}
 	
 	public void setImageBitmap( final Bitmap bitmap, Matrix matrix, float min_zoom, float max_zoom ) {
 		if ( bitmap != null )
@@ -807,16 +802,10 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	protected Matrix postScale( float scale, float centerX, float centerY ) {
 		
 		
-		Log.i( LOG_TAG, "BEFORE --> postScale OrigMatrix: " + getValue(getImageMatrix(), Matrix.MSCALE_X) );
-
 		if ( LOG_ENABLED ) {
 			Log.i( LOG_TAG, "postScale: " + scale + ", center: " + centerX + "x" + centerY );
 		}
 		mSuppMatrix.postScale( scale, scale, centerX, centerY );
-		
-		Log.i( LOG_TAG, "postScale mSuppMatrix: " + getValue(mSuppMatrix, Matrix.MSCALE_X));
-
-		Log.i( LOG_TAG, "postScale mBaseMatrix: " + getValue(mBaseMatrix, Matrix.MSCALE_X));
 		
 		Matrix display = new Matrix();
 		display.set(mBaseMatrix);
@@ -824,9 +813,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		
 		super.setImageMatrix( display );
 		onImageMatrixChanged();
-		Log.i( LOG_TAG, "AFTER --> postScale OrigMatrix: " + getValue(getImageMatrix(), Matrix.MSCALE_X) );
-
-			
 		return display;
 	}
 
