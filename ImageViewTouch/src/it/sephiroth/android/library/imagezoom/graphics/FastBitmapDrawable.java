@@ -24,31 +24,22 @@ public class FastBitmapDrawable extends Drawable implements IBitmapDrawable {
 
 	protected Bitmap mBitmap;
 	protected Paint mPaint;
-	protected ArrayList<PointF> points;
-	protected Bitmap tag;
-	
-	
 
 
-	public FastBitmapDrawable( Bitmap b, Bitmap tag ,  ArrayList<PointF> points ) {
+	public FastBitmapDrawable( Bitmap b ) {
 		mBitmap = b;
 		mPaint = new Paint();
 		mPaint.setDither( true );
 		mPaint.setFilterBitmap( true );
-		this.points = points;
-		this.tag = tag;
-		
-	
 	}
 	
 	public FastBitmapDrawable( Resources res, InputStream is ){
-		this(BitmapFactory.decodeStream(is),null,null );
+		this(BitmapFactory.decodeStream(is) );
 	}
 
 	@Override
 	public void draw( Canvas canvas ) {
 		canvas.drawBitmap( mBitmap, 0.0f, 0.0f, mPaint );
-		
 	}
 
 	@Override 
