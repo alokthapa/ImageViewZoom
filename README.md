@@ -1,3 +1,7 @@
+
+This is a fork of https://github.com/sephiroth74/ImageViewZoom. I modified the interface `OnImageViewTouchSingleTapListener` to return the unscaled (actual) X and Y values from the image and added `OnImageViewTouchScaleListener` and `OnImageViewTouchScrollListener`.
+
+
 ImageViewTouch Widget
 ----
 
