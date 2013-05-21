@@ -201,7 +201,29 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		return false;
 	}
 
-	
+    public float[] getActualPoints (float [] values)
+
+    {
+        Matrix now = getImageMatrix();
+        Matrix inv =new Matrix();
+        now.invert(inv);
+
+        inv.mapPoints(values);
+
+        return values;
+    }
+
+    public float[] getScaledPoints(float []values)
+    {
+        Matrix now = getImageMatrix();
+
+        now.mapPoints(values);
+
+        return values;
+
+
+    }
+
 	private float currentscale = 1f;
 	public class GestureListener extends GestureDetector.SimpleOnGestureListener {
 
@@ -209,13 +231,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		public boolean onSingleTapConfirmed( MotionEvent e ) {
 
 			if ( null != mSingleTapListener ) {
-				Matrix now = getImageMatrix();
-				Matrix inv =new Matrix();
-				now.invert(inv);
-				float [] pts= new float[] {e.getX(),e.getY()};
-				
-				inv.mapPoints(pts);
-
+                float [] pts = getActualPoints(new float[] {e.getX(),e.getY()});
 				mSingleTapListener.onSingleTapConfirmed(e, currentscale, pts[0],pts[1]);
 			}
 			
